@@ -1,0 +1,176 @@
+Microsoft (R) Macro Assembler Version 5.10                  5/5/18 12:58:27
+
+                                                             Page     1-1
+
+
+ 0000				SSTACK     SEGMENT PARA STACK  'STACK'
+ 0000  0040[				DB   64 DUP('ярей____')
+	   D1 D2 C5 CA 5F	
+	   5F 5F 5F		
+			 ]	
+				
+ 0200				SSTACK     ENDS
+				
+ 0000				DSEG          SEGMENT  PARA PUBLIC 'DATA'
+				
+ 0000  01 02 03 04 05		Y          DB     1,2,3,4,5
+ 0005  01 02 03 04 05			DB	   1,2,3,4,5
+ 000A  01 02 03 04 05			DB	   1,2,3,4,5
+ 000F  01 02 03 04 05			DB	   1,2,3,4,5
+ 0014  01 02 03 04 05			DB	   1,2,3,4,5
+					
+ 0019  0001			PRST         DW 1	; kolichestvo perestano
+				vok 1-2-3-4		
+				
+ 001B				DSEG          ENDS
+				
+				SUBTTL         MYPROG
+Microsoft (R) Macro Assembler Version 5.10                  5/5/18 12:58:27
+
+                                                             Page     1-2
+MYPROG                                                      
+
+				PAGE
+ 0000				CSEG      SEGMENT PARA PUBLIC 'CODE'
+				   ASSUME CS:CSEG,DS:DSEG,SS:SSTACK
+				
+ 0000				START     PROC FAR
+ 0000  B8 ---- R		   MOV  AX,DSEG
+ 0003  8E D8			   MOV  DS,AX
+				
+ 0005				M1:      
+ 0005  BB 0000 R		   MOV BX, OFFSET Y ; BX Hranit massiv
+ 0008  53			   PUSH BX
+				
+ 0009  B9 0004			   MOV CX, 4 ; kolichwstvo ciklov
+				   
+ 000C				OSNOVNOI:			   
+ 000C  B8 0000			   MOV AX, 0  
+ 000F  B0 06			   MOV AL, 6 ; mnojitel
+ 0011  F7 E1			   MUL CX   ; primer 3*6=18  AX = glavnaya diag
+				onal
+				
+ 0013  03 06 0019 R		   ADD AX, PRST  ; verhnya yacheyka matricy
+				   ; dlya perestanovki esli neobhodimo
+				   
+				   
+ 0017  8B D8			   MOV BX, AX
+				   
+ 0019  B8 0000			   MOV AX, 0 
+ 001C  B0 05			   MOV AL, 5 ; mnojitel
+ 001E  F7 E1			   MUL CX   ; primer 3*5=15  AX = glavnaya diag
+				onal
+ 0020  05 0005			   ADD AX, 5 ;20-15-10-5
+				   
+				   
+				   ;PUSH AX; sohranyaem v stek
+				
+				   ;MOV DX, 0
+				   ;MOV BL, 5 ;delitel
+				   ;DIV BL ; primer 19/5 AH=4
+				   
+				   ;CMP AH, 0     ; AH=0, ZF = 1
+				   ;JNZ OBMEN  ;esli ne nachalas sledyushaya
+				   ;stroka to perehod k perestanovke
+				   
+				   
+				   
+ 0023  3B D8			   CMP BX, AX     ; AX=20, ZF = 1
+ 0025  75 03			   JNZ NOV_CYKL
+				
+				   
+				   ;JNZ OBMEN  ;esli ne nachalas sledyushaya
+				   ;stroka to perehod k perestanovke
+				   
+ 0027  EB 0C 90			   JMP OBMEN
+				   
+Microsoft (R) Macro Assembler Version 5.10                  5/5/18 12:58:27
+
+                                                             Page     1-3
+MYPROG                                                      
+
+				
+				   
+ 002A				NOV_CYKL:
+ 002A  C7 06 0019 R 0001	   MOV PRST, 1 ; dlya sleduushego cikla
+ 0030  E2 DA			   LOOP OSNOVNOI ;CX-1	   
+ 0032  EB 15 90			   JMP M5 ; konec
+				
+ 0035				OBMEN: 
+ 0035  5B			  POP BX
+ 0036  5E			  POP SI  ;SI -verhnya yacheika ot 0 (iz steka)
+ 0037  8A 10			  MOV DL, [BX+SI] ;t.k. v XCHG doljen byt hotya
+				 by 1 registr
+				;POP DI ; DI - sdvig ot SI dlya nijnei yacheiki
+				;ADD DI SI
+				
+ 0039  B0 05			  MOV AL, 5  ; mnojitel
+ 003B  F7 26 0019 R		  MUL PRST ; primer 5*2=10 (dlya 2i perestanovk
+				i)
+ 003F  03 F0			  ADD SI, AX ; primer  SI=14 PRST=2 => DI sdvin
+				etsya
+				;na 10 (dlya 2i perestanovki)
+				
+ 0041  86 10			  XCHG DL, [BX+SI] ;transponirue yacheiki
+				
+ 0043  FF 06 0019 R		  INC PRST ; primer 2+1=3
+ 0047  EB C3			  JMP OSNOVNOI ; prodoljaem 
+					
+				
+				
+				
+ 0049				M5:       
+ 0049  CD 21			  INT  21H
+ 004B				M6:      
+ 004B  B4 4C			   MOV  AH,4CH
+ 004D  B0 00			   MOV  AL,0
+ 004F  CD 21			   INT 21H
+ 0051				START     ENDP
+				
+ 0051				CSEG      ENDS
+				   END  START
+Microsoft (R) Macro Assembler Version 5.10                  5/5/18 12:58:27
+
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+CSEG . . . . . . . . . . . . . .  	0051	PARA	PUBLIC	'CODE'
+DSEG . . . . . . . . . . . . . .  	001B	PARA	PUBLIC	'DATA'
+SSTACK . . . . . . . . . . . . .  	0200	PARA	STACK	'STACK'
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+M1 . . . . . . . . . . . . . . .  	L NEAR	0005	CSEG
+M5 . . . . . . . . . . . . . . .  	L NEAR	0049	CSEG
+M6 . . . . . . . . . . . . . . .  	L NEAR	004B	CSEG
+
+NOV_CYKL . . . . . . . . . . . .  	L NEAR	002A	CSEG
+
+OBMEN  . . . . . . . . . . . . .  	L NEAR	0035	CSEG
+OSNOVNOI . . . . . . . . . . . .  	L NEAR	000C	CSEG
+
+PRST . . . . . . . . . . . . . .  	L WORD	0019	DSEG
+
+START  . . . . . . . . . . . . .  	F PROC	0000	CSEG	Length = 0051
+
+Y  . . . . . . . . . . . . . . .  	L BYTE	0000	DSEG
+
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@FILENAME  . . . . . . . . . . .  	TEXT  lr_04		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+    106 Source  Lines
+    106 Total   Lines
+     24 Symbols
+
+  47906 + 459354 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors
